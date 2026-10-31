@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>علمني</title>
+    <meta name="description" content="أستاذ قريب منك، في المادة التي تحتاجها" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="theme-color" content="#1D3B8C" />
+    <link rel="icon" href="./icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://cdn.jsdelivr.net/npm/react@18.3.1/+esm",
+          "react/jsx-runtime": "https://cdn.jsdelivr.net/npm/react@18.3.1/jsx-runtime/+esm",
+          "react-dom/client": "https://cdn.jsdelivr.net/npm/react-dom@18.3.1/client/+esm",
+          "lucide-react": "https://cdn.jsdelivr.net/npm/lucide-react@0.383.0/+esm"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // Une fois votre backend de paiement déployé (dossier aalimni-backend),
+      // mettez son URL ici pour activer le vrai paiement.
+      window.__BACKEND_URL__ = "";
+    </script>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
