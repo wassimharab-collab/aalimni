@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { initializeApp } from "https://cdn.jsdelivr.net/npm/firebase@10.14.1/app/+esm";
-import { getFirestore, doc, getDoc, setDoc } from "https://cdn.jsdelivr.net/npm/firebase@10.14.1/firestore/+esm";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Search, UserPlus, BarChart3, Phone, MessageCircle, LocateFixed, X, Trash2, Star, List, Map as MapIcon, Navigation, ShieldCheck, Check, Flag, Send, MessageSquare, Users, Gift, CreditCard, Bell, Globe, Lock, LogOut, User, Plus, GraduationCap, } from "lucide-react";
 /* ---------------- static data ---------------- */
