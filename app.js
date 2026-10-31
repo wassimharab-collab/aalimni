@@ -1,4 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Search, UserPlus, BarChart3, Phone, MessageCircle, LocateFixed, X, Trash2, Star, List, Map as MapIcon, Navigation, ShieldCheck, Check, Flag, Send, MessageSquare, Users, Gift, CreditCard, Bell, Globe, Lock, LogOut, User, Plus, GraduationCap, } from "lucide-react";
 /* ---------------- static data ---------------- */
@@ -590,15 +592,27 @@ font-family:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;color:var(--text
 const EMPTY_FORM = { name: "", type: "grad", gender: "", phone: "", subjects: [], levels: [], modes: [], price: "", city: "تونس العاصمة", area: "", bio: "", packSessions: "", packPrice: "", refBy: "", declared: false, lat: null, lng: null };
 const EMPTY_REVIEW = { stars: 0, name: "", level: "", text: "" };
 const EMPTY_REPORT = { reason: "reasonInfo", note: "" };
-/* Claude's sandbox exposes window.storage; a real deployed site doesn't, so we
-   use the browser's own localStorage instead, behind the same tiny interface. */
+/* Shared backend: Firestore, so every visitor (admin + teachers + students) reads
+   and writes the same data, instead of each browser having its own isolated copy. */
+const firebaseConfig = {
+    apiKey: "AIzaSyCqyhz_X-tuhT8WYn6LN_3epP5lA_6ZTLQ",
+    authDomain: "aalimni-48a28.firebaseapp.com",
+    projectId: "aalimni-48a28",
+    storageBucket: "aalimni-48a28.firebasestorage.app",
+    messagingSenderId: "470602788870",
+    appId: "1:470602788870:web:6f25c54ac682073fa5d387",
+};
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
 const storage = {
     async get(key) {
-        const raw = window.localStorage.getItem(key);
-        return raw === null ? null : { key, value: raw };
+        const snap = await getDoc(doc(db, "appdata", key));
+        if (!snap.exists())
+            return null;
+        return { key, value: snap.data().value };
     },
     async set(key, value) {
-        window.localStorage.setItem(key, value);
+        await setDoc(doc(db, "appdata", key), { value, updatedAt: Date.now() });
         return { key, value };
     },
 };
