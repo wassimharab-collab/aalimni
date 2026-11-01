@@ -22,7 +22,7 @@ const CITIES = [
 const SUBJECTS = ["رياضيات", "فيزياء", "علوم", "عربية", "فرنسية", "إنجليزية", "فلسفة", "إعلامية", "اقتصاد وتصرف"];
 const LEVELS = ["ابتدائي", "إعدادي", "ثانوي", "باكالوريا"];
 const TYPES = { teacher_pub: "معلم/أستاذ (قطاع عمومي)", teacher_priv: "معلم/أستاذ (قطاع خاص)", retired: "أستاذ متقاعد", grad: "خريج", student: "طالب جامعي", lang: "مدرّب لغات", center: "مركز دعم مرخّص" };
-const MODES = ["في منزل التلميذ", "في منزل الأستاذ", "عن بُعد", "في المركز"];
+const MODES = ["عن بُعد", "في المركز"];
 const RADII = [2, 5, 10, 25, 50];
 const AVATAR_COLORS = ["#1D3B8C", "#C73A3F", "#1E8A4A", "#8A5A1E", "#5A3B8C", "#0E7C86"];
 /* Finite, closed lists (unlike free-text names/bios/reviews) can be fully translated. */
