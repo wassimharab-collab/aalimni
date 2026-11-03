@@ -610,9 +610,9 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
 const auth = getAuth(fbApp);
-/* Only this account can open the "المالك" (owner/admin) dashboard. Access is checked
+/* Only these accounts can open the "المالك" (owner/admin) dashboard. Access is checked
    server-side by Firebase Authentication, not by a value stored in the shared app data. */
-const OWNER_EMAIL = "wassimhr17@gmail.com";
+const OWNER_EMAILS = ["wassimhr17@gmail.com", "wassimharabi@hotmail.com"];
 const storage = {
     async get(key) {
         const snap = await getDoc(doc(db, "appdata", key));
@@ -687,7 +687,7 @@ export default function App() {
     const [ownerErr, setOwnerErr] = useState("");
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, (user) => {
-            setOwnerUnlocked(!!user && user.email === OWNER_EMAIL);
+            setOwnerUnlocked(!!user && OWNER_EMAILS.includes(user.email));
         });
         return unsub;
     }, []);
@@ -1030,7 +1030,7 @@ export default function App() {
     const pendingVerifications = all.filter((t) => data.verificationRequests?.[t.id] && data.verifications[t.id] !== "verified" && data.verifications[t.id] !== "none");
     const pendingReferralClaims = data.referralClaims || [];
     const enterOwner = async () => {
-        if (ownerEmailInput.trim().toLowerCase() !== OWNER_EMAIL) {
+        if (!OWNER_EMAILS.includes(ownerEmailInput.trim().toLowerCase())) {
             setOwnerErr(L.gateWrong);
             return;
         }
