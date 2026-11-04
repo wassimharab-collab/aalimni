@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Search, UserPlus, BarChart3, Phone, MessageCircle, LocateFixed, X, Trash2, Star, List, Map as MapIcon, Navigation, ShieldCheck, Check, Flag, Send, MessageSquare, Users, Gift, CreditCard, Bell, Globe, Lock, LogOut, User, Plus, GraduationCap, } from "lucide-react";
@@ -739,23 +739,44 @@ export default function App() {
        (registrations, reviews, contacts, reports...). "aalimni-owner" holds the
        parts only the owner account may write (subscriptions, verification
        decisions, settings) — enforced by Firestore rules, not just by hiding
-       the button in the UI. */
-    const save = async (d) => { try {
-        const { subscriptions, verifications, settings, ...pub } = d;
-        await storage.set("aalimni-data", JSON.stringify(pub));
-    }
-    catch (e) {
-        console.error("Storage error:", e);
-    } };
-    const saveOwner = async (d) => { try {
-        const { subscriptions, verifications, settings } = d;
-        await storage.set("aalimni-owner", JSON.stringify({ subscriptions, verifications, settings }));
-    }
-    catch (e) {
-        console.error("Owner storage error:", e);
-    } };
-    const update = (fn) => setData((prev) => { const next = fn(prev); save(next); return next; });
-    const updateOwner = (fn) => setData((prev) => { const next = fn(prev); save(next); saveOwner(next); return next; });
+       the button in the UI.
+
+       update()/updateOwner() run inside a Firestore transaction instead of
+       just overwriting whatever this tab currently has in memory. Each call
+       re-reads the document as it REALLY is on the server at that instant,
+       applies the change on top of that fresh copy, and writes the result
+       back — all atomically. Without this, a tab left open with an older
+       snapshot could silently wipe out registrations/reviews/contacts added
+       by everyone else since that tab loaded (this is what erased real
+       teacher profiles before). The function passed to update()/updateOwner()
+       is unchanged everywhere else in the app — only this plumbing changed. */
+    const dataDocRef = doc(db, "appdata", "aalimni-data");
+    const ownerDocRef = doc(db, "appdata", "aalimni-owner");
+    const update = (fn) => {
+        runTransaction(db, async (tx) => {
+            const snap = await tx.get(dataDocRef);
+            const freshPub = snap.exists() ? JSON.parse(snap.data().value) : {};
+            const base = { ...INITIAL, ...freshPub, subscriptions: data.subscriptions, verifications: data.verifications, settings: data.settings, lang: data.lang };
+            const next = fn(base);
+            const { subscriptions, verifications, settings, ...pub } = next;
+            tx.set(dataDocRef, { value: JSON.stringify(pub), updatedAt: Date.now() });
+            return next;
+        }).then((next) => setData(next)).catch((e) => console.error("Storage error:", e));
+    };
+    const updateOwner = (fn) => {
+        runTransaction(db, async (tx) => {
+            const dataSnap = await tx.get(dataDocRef);
+            const ownerSnap = await tx.get(ownerDocRef);
+            const freshPub = dataSnap.exists() ? JSON.parse(dataSnap.data().value) : {};
+            const freshOwn = ownerSnap.exists() ? JSON.parse(ownerSnap.data().value) : {};
+            const base = { ...INITIAL, ...freshPub, ...freshOwn, lang: data.lang };
+            const next = fn(base);
+            const { subscriptions, verifications, settings, ...pub } = next;
+            tx.set(dataDocRef, { value: JSON.stringify(pub), updatedAt: Date.now() });
+            tx.set(ownerDocRef, { value: JSON.stringify({ subscriptions, verifications, settings }), updatedAt: Date.now() });
+            return next;
+        }).then((next) => setData(next)).catch((e) => console.error("Owner storage error:", e));
+    };
     const all = useMemo(() => [...SEED, ...data.registered], [data.registered]);
     const ratings = useMemo(() => {
         const m = {};
